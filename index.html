@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Hatim Otomasyonu v4</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramazan ve Yıllık Hatim Takip Sistemi</title>
     <style>
         /* Arayüz Ayarları */
         .no-print {
@@ -55,6 +56,52 @@
             color: #f8f9fa;
             font-weight: bold;
             margin-top: 8px;
+        }
+
+        /* Form Düzeni */
+        .form-row {
+            margin-bottom: 12px;
+        }
+
+        .form-row strong {
+            display: inline-block;
+            min-width: 140px;
+            margin-right: 10px;
+        }
+
+        .form-row input[type="date"] {
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid #95a5a6;
+            font-size: 13px;
+            margin-right: 10px;
+        }
+
+        /* Bildirim mesajı */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            font-weight: bold;
+            z-index: 9999;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         /* Sayfa Yapısı - Tam A4 Yatay */
@@ -213,13 +260,15 @@
         <div class="form-row">
             <strong>Ramazan Başlangıcı:</strong>
             <input type="date" id="rDate" value="2026-02-18">
-            <button style="background: #e67e22; color:white" onclick="generate('daily')">Liste Oluştur 📖 RAMAZAN (GÜNLÜK)</button>
+            <button style="background: #e67e22; color:white" onclick="generate('daily')">Liste Oluştur 📖 RAMAZAN
+                (GÜNLÜK)</button>
         </div>
 
         <div class="form-row">
             <strong>Yıllık Başlangıç:</strong>
             <input type="date" id="wDate" value="2026-03-27">
-            <button style="background: #3498db; color:white" onclick="generate('weekly')">Liste Oluştur 📅 YILLIK (HAFTALIK)</button>
+            <button style="background: #3498db; color:white" onclick="generate('weekly')">Liste Oluştur 📅 YILLIK
+                (HAFTALIK)</button>
         </div>
 
         <div style="margin-top: 15px;">
@@ -243,11 +292,37 @@
             return `${day}.${month}.${year}`;
         }
 
+        // Bildirim göster
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            if (type === 'error') notification.style.background = '#e74c3c';
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.animation = 'slideIn 0.3s ease-out reverse';
+                setTimeout(() => notification.remove(), 300);
+            }, 2500);
+        }
+
         function generate(mode) {
             const output = document.getElementById('output');
+            const rDateInput = document.getElementById('rDate');
+            const wDateInput = document.getElementById('wDate');
+
+            // Form validasyonu
+            if (mode === 'daily' && !rDateInput.value) {
+                showNotification('Lütfen Ramazan başlangıç tarihini seçiniz!', 'error');
+                return;
+            }
+            if (mode === 'weekly' && !wDateInput.value) {
+                showNotification('Lütfen yıllık başlangıç tarihini seçiniz!', 'error');
+                return;
+            }
+
             output.innerHTML = "";
-            const rStart = new Date(document.getElementById('rDate').value);
-            const wStart = new Date(document.getElementById('wDate').value);
+            const rStart = new Date(rDateInput.value);
+            const wStart = new Date(wDateInput.value);
 
             // 30 Cüz için 6 sayfa
             for (let p = 0; p < 6; p++) {
@@ -291,6 +366,10 @@
                 }
                 output.appendChild(page);
             }
+
+            // Başarı bildirimi
+            const listType = mode === 'daily' ? 'Ramazan günlük' : 'Yıllık haftalık';
+            showNotification(`✓ ${listType} liste başarıyla oluşturuldu!`);
         }
     </script>
 </body>
