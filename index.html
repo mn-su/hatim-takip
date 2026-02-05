@@ -30,6 +30,33 @@
             margin: 5px;
         }
 
+        .hadis-box {
+            background: linear-gradient(135deg, #1e7e34 0%, #27ae60 100%);
+            border-left: 4px solid #f39c12;
+            padding: 15px 20px;
+            margin: 0 auto 20px;
+            max-width: 900px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .hadis-box p {
+            margin: 0 0 8px;
+            line-height: 1.6;
+            font-size: 14px;
+            text-align: justify;
+            font-style: italic;
+        }
+
+        .hadis-box cite {
+            display: block;
+            text-align: right;
+            font-size: 12px;
+            color: #f8f9fa;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
         /* Sayfa Yapısı - Tam A4 Yatay */
         body {
             margin: 0;
@@ -122,10 +149,16 @@
             font-size: 9pt;
         }
 
-        .ramadan-day {
-            font-size: 7pt;
-            color: #666;
-            font-style: italic;
+        /* Striped (zebra) tablo satırları */
+        tr:nth-child(even) {
+            background-color: #f9f9f9 !important;
+        }
+
+        @media print {
+            tr:nth-child(even) {
+                background-color: #f9f9f9 !important;
+                -webkit-print-color-adjust: exact;
+            }
         }
 
         /* Yıllık tablolar için daha sıkı düzenleme */
@@ -168,14 +201,35 @@
 <body>
 
     <div class="no-print">
-        <strong>Ramazan Başlangıcı:</strong> <input type="date" id="rDate" value="2026-02-18">
-        <strong>Yıllık Başlangıç:</strong> <input type="date" id="wDate" value="2026-03-27">
-        <br><br>
-        <button style="background: #e67e22; color:white" onclick="generate('daily')">📖 RAMAZAN (GÜNLÜK)</button>
-        <button style="background: #3498db; color:white" onclick="generate('weekly')">📅 YILLIK (HAFTALIK)</button>
-        <button style="background: #27ae60; color:white" onclick="window.print()">🖨️ YAZDIR</button>
-        <button style="background: #95a5a6; color:white" onclick="document.getElementById('output').innerHTML=''">🗑️
-            TEMİZLE</button>
+        <div class="hadis-box">
+            <p>Ebû Hüreyre'den gelen rivayete göre, Allah Resûlü (sav) şöyle buyurmuştur: "Kur'an'ı öğrenin, onu okuyun
+                ve okutun. Kur'an'ı öğrenen, okuyan ve gereğini yapan kimse, her tarafa koku yayan misk dolu bir kaba
+                benzer. Kur'an'ı öğrendiği hâlde (onu okumayan ve okutmayan) yatıp uyuyan kimse ise ağzı bağlı bir misk
+                kabına benzer."</p>
+            <cite>(T2876 Tirmizî, Fedâilü'l-Kur'ân, 2)</cite>
+        </div>
+
+
+        <div class="form-row">
+            <strong>Ramazan Başlangıcı:</strong>
+            <input type="date" id="rDate" value="2026-02-18">
+            <button style="background: #e67e22; color:white" onclick="generate('daily')">📖 RAMAZAN (GÜNLÜK)</button>
+        </div>
+
+        <div class="form-row">
+            <strong>Yıllık Başlangıç:</strong>
+            <input type="date" id="wDate" value="2026-03-27">
+            <button style="background: #3498db; color:white" onclick="generate('weekly')">📅 YILLIK (HAFTALIK)</button>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <button
+                style="background: #27ae60; color:white; padding: 8px 15px; cursor: pointer; border-radius: 4px; border: none; font-weight: bold; margin: 5px;"
+                onclick="window.print()">🖨️ YAZDIR</button>
+            <button
+                style="background: #95a5a6; color:white; padding: 8px 15px; cursor: pointer; border-radius: 4px; border: none; font-weight: bold; margin: 5px;"
+                onclick="document.getElementById('output').innerHTML=''">🗑️ TEMİZLE</button>
+        </div>
     </div>
 
     <div id="output"></div>
@@ -216,8 +270,7 @@
                             date.setDate(rStart.getDate() + d);
                             // Kişinin başlangıç cüzünden itibaren her gün bir sonraki cüz
                             let currentCuz = ((startCuzNum + d - 1) % 30) + 1;
-                            const ramadanDay = d + 1; // Ramazan'ın kaçıncı günü
-                            html += `<tr><td>${formatDate(date)} <span class="ramadan-day">- ${ramadanDay}. Ramazan</span></td><td class="cuz-cell">${currentCuz}</td></tr>`;
+                            html += `<tr><td>${formatDate(date)}</td><td class="cuz-cell">${currentCuz}</td></tr>`;
                         }
                     } else {
                         html = `<div class="header">${startCuzNum}. CÜZ</div>` +
