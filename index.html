@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Hatim Otomasyonu v4</title>
+    <style>
+        /* Arayüz Ayarları */
+        .no-print {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-family: sans-serif;
+        }
+
+        .no-print input {
+            padding: 5px;
+            margin: 0 10px;
+            border-radius: 4px;
+            border: none;
+        }
+
+        .no-print button {
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            border: none;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        /* Sayfa Yapısı - Tam A4 Yatay */
+        body {
+            margin: 0;
+            padding: 0;
+            background: #ccc;
+        }
+
+        .page {
+            width: 297mm;
+            height: 210mm;
+            padding: 5mm;
+            margin: 10mm auto;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            /* Sütunlar arası boşluk */
+            box-sizing: border-box;
+            page-break-after: always;
+            overflow: hidden;
+        }
+
+        /* Sütun Yapısı */
+        .column {
+            width: 55mm;
+            /* 5 sütun için A4'e tam sığan genişlik */
+            border: 1px solid black;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 12pt;
+            padding: 3px 0;
+            border-bottom: 2px solid black;
+            background: #eee !important;
+            -webkit-print-color-adjust: exact;
+        }
+
+        .subheader {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 5px;
+            background: #fff;
+            font-size: 9pt;
+            font-weight: bold;
+            border-bottom: 1px solid black;
+        }
+
+        .title-bar {
+            background: black !important;
+            color: white !important;
+            text-align: center;
+            font-size: 8pt;
+            padding: 2px 0;
+            -webkit-print-color-adjust: exact;
+            font-weight: bold;
+        }
+
+        /* Tablo Tasarımı */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            text-align: center;
+            padding: 2px 0;
+            line-height: 1.2;
+        }
+
+        th {
+            font-size: 8pt;
+            background: #f2f2f2 !important;
+            -webkit-print-color-adjust: exact;
+            padding: 2px 0;
+        }
+
+        td {
+            font-size: 8pt;
+        }
+
+        .cuz-cell {
+            font-weight: bold;
+            font-size: 9pt;
+        }
+
+        .ramadan-day {
+            font-size: 7pt;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Yıllık tablolar için daha sıkı düzenleme */
+        .weekly-table th,
+        .weekly-table td {
+            padding: 0.9px 0;
+            line-height: 1;
+        }
+
+        .weekly-table td {
+            font-size: 7.5pt;
+        }
+
+        .weekly-table .cuz-cell {
+            font-size: 9pt;
+        }
+
+        @media print {
+            body {
+                background: none;
+            }
+
+            .no-print {
+                display: none;
+            }
+
+            .page {
+                margin: 0;
+                border: none;
+            }
+
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="no-print">
+        <strong>Ramazan Başlangıcı:</strong> <input type="date" id="rDate" value="2026-02-18">
+        <strong>Yıllık Başlangıç:</strong> <input type="date" id="wDate" value="2026-03-27">
+        <br><br>
+        <button style="background: #e67e22; color:white" onclick="generate('daily')">📖 RAMAZAN (GÜNLÜK)</button>
+        <button style="background: #3498db; color:white" onclick="generate('weekly')">📅 YILLIK (HAFTALIK)</button>
+        <button style="background: #27ae60; color:white" onclick="window.print()">🖨️ YAZDIR</button>
+        <button style="background: #95a5a6; color:white" onclick="document.getElementById('output').innerHTML=''">🗑️
+            TEMİZLE</button>
+    </div>
+
+    <div id="output"></div>
+
+    <script>
+        // Tarih formatını gg.aa.yyyy olarak döndür
+        function formatDate(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+
+        function generate(mode) {
+            const output = document.getElementById('output');
+            output.innerHTML = "";
+            const rStart = new Date(document.getElementById('rDate').value);
+            const wStart = new Date(document.getElementById('wDate').value);
+
+            // 30 Cüz için 6 sayfa
+            for (let p = 0; p < 6; p++) {
+                const page = document.createElement('div');
+                page.className = 'page';
+
+                for (let i = 0; i < 5; i++) {
+                    const startCuzNum = (p * 5) + i + 1; // Listenin tepesinde yazan cüz adı
+                    const column = document.createElement('div');
+                    column.className = 'column';
+
+                    let html = `<div class="subheader"><span>BİTİŞ TARİHİ</span><span>CÜZ</span></div>`;
+
+                    if (mode === 'daily') {
+                        html = `<div class="header">${startCuzNum}. CÜZ</div>` +
+                            `<div class="title-bar">RAMAZAN GÜNLÜK</div>` +
+                            `<table><tr><th style="width:70%">TARİH</th><th>CÜZ</th></tr>`;
+                        for (let d = 0; d < 30; d++) {
+                            let date = new Date(rStart);
+                            date.setDate(rStart.getDate() + d);
+                            // Kişinin başlangıç cüzünden itibaren her gün bir sonraki cüz
+                            let currentCuz = ((startCuzNum + d - 1) % 30) + 1;
+                            const ramadanDay = d + 1; // Ramazan'ın kaçıncı günü
+                            html += `<tr><td>${formatDate(date)} <span class="ramadan-day">- ${ramadanDay}. Ramazan</span></td><td class="cuz-cell">${currentCuz}</td></tr>`;
+                        }
+                    } else {
+                        html = `<div class="header">${startCuzNum}. CÜZ</div>` +
+                            `<div class="title-bar">HAFTALIK ZİNCİR</div>` +
+                            `<table class="weekly-table"><tr><th style="width:70%">TARİH</th><th>CÜZ</th></tr>`;
+                        // Görseldeki 46 haftalık tam döngü (Örn: 15'ten başlayıp 30'da biten)
+                        for (let w = 0; w < 46; w++) {
+                            let date = new Date(wStart);
+                            date.setDate(wStart.getDate() + (w * 7));
+                            let currentCuz = ((startCuzNum + w - 1) % 30) + 1;
+                            html += `<tr><td>${formatDate(date)}</td><td class="cuz-cell">${currentCuz}</td></tr>`;
+                        }
+                    }
+
+                    html += `</table>`;
+                    column.innerHTML = html;
+                    page.appendChild(column);
+                }
+                output.appendChild(page);
+            }
+        }
+    </script>
+</body>
+
+</html>
