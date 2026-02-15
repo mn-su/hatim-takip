@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramazan ve Yıllık Hatim Takip Sistemi</title>
+    <style>
+        /* Arayüz Ayarları */
+        .no-print {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-family: sans-serif;
+        }
+
+        .no-print input {
+            padding: 5px;
+            margin: 0 10px;
+            border-radius: 4px;
+            border: none;
+        }
+
+        .no-print button {
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            border: none;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        .hadis-box {
+            background: linear-gradient(135deg, #1e7e34 0%, #27ae60 100%);
+            border-left: 4px solid #f39c12;
+            padding: 15px 20px;
+            margin: 0 auto 20px;
+            max-width: 900px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .hadis-box p {
+            margin: 0 0 8px;
+            line-height: 1.6;
+            font-size: 14px;
+            text-align: justify;
+            font-style: italic;
+        }
+
+        .hadis-box cite {
+            display: block;
+            text-align: right;
+            font-size: 12px;
+            color: #f8f9fa;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        /* Form Düzeni */
+        .form-row {
+            margin-bottom: 12px;
+        }
+
+        .form-row strong {
+            display: inline-block;
+            min-width: 140px;
+            margin-right: 10px;
+        }
+
+        .form-row input[type="date"] {
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid #95a5a6;
+            font-size: 13px;
+            margin-right: 10px;
+        }
+
+        /* Bildirim mesajı */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            font-weight: bold;
+            z-index: 9999;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Sayfa Yapısı - Tam A4 Yatay */
+        body {
+            margin: 0;
+            padding: 0;
+            background: #ccc;
+        }
+
+        .page {
+            width: 297mm;
+            height: 210mm;
+            padding: 5mm;
+            margin: 10mm auto;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            /* Sütunlar arası boşluk */
+            box-sizing: border-box;
+            page-break-after: always;
+            overflow: hidden;
+        }
+
+        /* Sütun Yapısı */
+        .column {
+            width: 55mm;
+            /* 5 sütun için A4'e tam sığan genişlik */
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 12pt;
+            padding: 3px 0;
+            border-bottom: 2px solid black;
+            background: #eee !important;
+            -webkit-print-color-adjust: exact;
+        }
+
+        .subheader {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 5px;
+            background: #fff;
+            font-size: 9pt;
+            font-weight: bold;
+            border-bottom: 1px solid black;
+        }
+
+        .title-bar {
+            background: #555 !important;
+            color: white !important;
+            text-align: center;
+            font-size: 8pt;
+            padding: 2px 0;
+            -webkit-print-color-adjust: exact;
+            font-weight: bold;
+        }
+
+        /* Tablo Tasarımı */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th,
+        td {
+            border: 0.5px solid #666;
+            text-align: center;
+            padding: 2px 0;
+            line-height: 1.2;
+        }
+
+        th {
+            font-size: 8pt;
+            background: #f2f2f2 !important;
+            -webkit-print-color-adjust: exact;
+            padding: 2px 0;
+        }
+
+        td {
+            font-size: 8pt;
+        }
+
+        .cuz-cell {
+            font-weight: bold;
+            font-size: 9pt;
+        }
+
+        /* Striped (zebra) tablo satırları */
+        tr:nth-child(even) {
+            background-color: #f9f9f9 !important;
+        }
+
+        @media print {
+            tr:nth-child(even) {
+                background-color: #f9f9f9 !important;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+
+        /* Yıllık tablolar için daha sıkı düzenleme */
+        .weekly-table th,
+        .weekly-table td {
+            padding: 0.9px 0;
+            line-height: 1;
+        }
+
+        .weekly-table td {
+            font-size: 7.5pt;
+        }
+
+        .weekly-table .cuz-cell {
+            font-size: 9pt;
+        }
+
+        @media print {
+            body {
+                background: none;
+            }
+
+            .no-print {
+                display: none;
+            }
+
+            .page {
+                margin: 0;
+                border: none;
+            }
+
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+        }
+    </style>
+<base target="_blank">
+</head>
+
+<body>
+
+    <div class="no-print">
+        <div class="hadis-box">
+            <p>Ebû Hüreyre'den gelen rivayete göre, Allah Resûlü (sav) şöyle buyurmuştur: "Kur'an'ı öğrenin, onu okuyun
+                ve okutun. Kur'an'ı öğrenen, okuyan ve gereğini yapan kimse, her tarafa koku yayan misk dolu bir kaba
+                benzer. Kur'an'ı öğrendiği hâlde (onu okumayan ve okutmayan) yatıp uyuyan kimse ise ağzı bağlı bir misk
+                kabına benzer."</p>
+            <cite>(T2876 Tirmizî, Fedâilü'l-Kur'ân, 2)</cite>
+        </div>
+
+
+        <div class="form-row">
+            <strong>Ramazan Başlangıcı:</strong>
+            <input type="date" id="rDate" value="2026-02-18">
+            <button style="background: #e67e22; color:white" onclick="generate('daily')">Liste Oluştur 📖 RAMAZAN
+                (GÜNLÜK)</button>
+        </div>
+
+        <div class="form-row">
+            <strong>Yıllık Başlangıç:</strong>
+            <input type="date" id="wDate" value="2026-03-27">
+            <button style="background: #3498db; color:white" onclick="generate('weekly')">Liste Oluştur 📅 YILLIK
+                (HAFTALIK)</button>
+        </div>
+
+        <div class="form-row">
+            <strong>Cüz Numarası:</strong>
+            <input type="number" id="cuzNumber" min="1" max="30" value="1">
+            <button style="background: #16a085; color:white" onclick="showSingleCuz()">Sadece Bu Cüzü Göster</button>
+            <button style="background: #9b59b6; color:white" onclick="showBothCuz()">🔄 İkisini Birlikte Getir</button>
+            <button style="background: #7f8c8d; color:white" onclick="showAll()">Tüm Listeyi Geri Getir</button>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <button
+                style="background: #27ae60; color:white; padding: 8px 15px; cursor: pointer; border-radius: 4px; border: none; font-weight: bold; margin: 5px;"
+                onclick="window.print()">🖨️ Listeyi Yazdır</button>
+            <button
+                style="background: #333333; color:white; padding: 8px 15px; cursor: pointer; border-radius: 4px; border: none; font-weight: bold; margin: 5px;"
+                onclick="document.getElementById('output').innerHTML=''">🗑️ Listeyi Temizle</button>
+        </div>
+    </div>
+
+    <div id="output"></div>
+
+    <script>
+        let lastGeneratedMode = null;
+        let lastGeneratedStartValue = null;
+
+        // Tarih formatını gg.aa.yyyy olarak döndür
+        function formatDate(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+
+        // Bildirim göster
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            if (type === 'error') notification.style.background = '#e74c3c';
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.animation = 'slideIn 0.3s ease-out reverse';
+                setTimeout(() => notification.remove(), 300);
+            }, 2500);
+        }
+
+        function renderList(mode, startValue, onlyCuzNum = null) {
+            const output = document.getElementById('output');
+            output.innerHTML = "";
+            const startDate = new Date(startValue);
+            const columns = onlyCuzNum ? [onlyCuzNum] : Array.from({
+                length: 30
+            }, (_, i) => i + 1);
+            const totalPages = Math.ceil(columns.length / 5);
+
+            // 30 Cüz için 6 sayfa
+            for (let p = 0; p < totalPages; p++) {
+                const page = document.createElement('div');
+                page.className = 'page';
+
+                const pageColumns = columns.slice(p * 5, p * 5 + 5);
+                for (const startCuzNum of pageColumns) {
+                    const column = document.createElement('div');
+                    column.className = 'column';
+
+                    let html = `<div class="subheader"><span>BİTİŞ TARİHİ</span><span>CÜZ</span></div>`;
+
+                    if (mode === 'daily') {
+                        html = `<div class="header">${startCuzNum}. CÜZ</div>` +
+                            `<div class="title-bar">RAMAZAN GÜNLÜK</div>` +
+                            `<table><tr><th style="width:70%">TARİH</th><th>CÜZ</th></tr>`;
+                        for (let d = 0; d < 30; d++) {
+                            let date = new Date(startDate);
+                            date.setDate(startDate.getDate() + d);
+                            // Kişinin başlangıç cüzünden itibaren her gün bir sonraki cüz
+                            let currentCuz = ((startCuzNum + d - 1) % 30) + 1;
+                            html += `<tr><td>${formatDate(date)}</td><td class="cuz-cell">${currentCuz}</td></tr>`;
+                        }
+                    } else {
+                        html = `<div class="header">${startCuzNum}. CÜZ</div>` +
+                            `<div class="title-bar">HAFTALIK ZİNCİR</div>` +
+                            `<table class="weekly-table"><tr><th style="width:70%">TARİH</th><th>CÜZ</th></tr>`;
+                        // Görseldeki 46 haftalık tam döngü (Örn: 15'ten başlayıp 30'da biten)
+                        for (let w = 0; w < 46; w++) {
+                            let date = new Date(startDate);
+                            date.setDate(startDate.getDate() + (w * 7));
+                            let currentCuz = ((startCuzNum + w - 1) % 30) + 1;
+                            html += `<tr><td>${formatDate(date)}</td><td class="cuz-cell">${currentCuz}</td></tr>`;
+                        }
+                    }
+
+                    html += `</table>`;
+                    column.innerHTML = html;
+                    page.appendChild(column);
+                }
+                output.appendChild(page);
+            }
+        }
+
+        // YENİ FONKSİYON: İki programı tek sayfada yan yana render et (Ramazan ve Yıllık)
+        function renderBothPrograms(cuzNum) {
+            const output = document.getElementById('output');
+            output.innerHTML = "";
+            
+            const rDateInput = document.getElementById('rDate').value;
+            const wDateInput = document.getElementById('wDate').value;
+            
+            if (!rDateInput || !wDateInput) {
+                showNotification('Lütfen hem Ramazan hem de Yıllık başlangıç tarihlerini seçiniz!', 'error');
+                return false;
+            }
+            
+            const rStartDate = new Date(rDateInput);
+            const wStartDate = new Date(wDateInput);
+            
+            // Tek sayfa oluştur
+            const page = document.createElement('div');
+            page.className = 'page';
+            
+            // 1. Sütun: Ramazan Günlük Program
+            const rColumn = document.createElement('div');
+            rColumn.className = 'column';
+            rColumn.style.width = '55mm';
+            
+            let rHtml = `<div class="header">${cuzNum}. CÜZ</div>` +
+                `<div class="title-bar">RAMAZAN GÜNLÜK</div>` +
+                `<table><tr><th style="width:70%">TARİH</th><th>CÜZ</th></tr>`;
+            
+            for (let d = 0; d < 30; d++) {
+                let date = new Date(rStartDate);
+                date.setDate(rStartDate.getDate() + d);
+                let currentCuz = ((cuzNum + d - 1) % 30) + 1;
+                rHtml += `<tr><td>${formatDate(date)}</td><td class="cuz-cell">${currentCuz}</td></tr>`;
+            }
+            rHtml += `</table>`;
+            rColumn.innerHTML = rHtml;
+            page.appendChild(rColumn);
+            
+            // 2. Sütun: Yıllık Haftalık Program
+            const wColumn = document.createElement('div');
+            wColumn.className = 'column';
+            wColumn.style.width = '55mm';
+            
+            let wHtml = `<div class="header">${cuzNum}. CÜZ</div>` +
+                `<div class="title-bar">HAFTALIK ZİNCİR</div>` +
+                `<table class="weekly-table"><tr><th style="width:70%">TARİH</th><th>CÜZ</th></tr>`;
+            
+            for (let w = 0; w < 46; w++) {
+                let date = new Date(wStartDate);
+                date.setDate(wStartDate.getDate() + (w * 7));
+                let currentCuz = ((cuzNum + w - 1) % 30) + 1;
+                wHtml += `<tr><td>${formatDate(date)}</td><td class="cuz-cell">${currentCuz}</td></tr>`;
+            }
+            wHtml += `</table>`;
+            wColumn.innerHTML = wHtml;
+            page.appendChild(wColumn);
+            
+            // Boş sütunlar ekle (sayfa düzeni için - toplam 5 sütun olacak şekilde)
+            for (let i = 0; i < 3; i++) {
+                const emptyCol = document.createElement('div');
+                emptyCol.className = 'column';
+                emptyCol.style.width = '55mm';
+                emptyCol.style.visibility = 'hidden';
+                page.appendChild(emptyCol);
+            }
+            
+            output.appendChild(page);
+            
+            return true;
+        }
+
+        function generate(mode) {
+            const rDateInput = document.getElementById('rDate');
+            const wDateInput = document.getElementById('wDate');
+
+            // Form validasyonu
+            if (mode === 'daily' && !rDateInput.value) {
+                showNotification('Lütfen Ramazan başlangıç tarihini seçiniz!', 'error');
+                return;
+            }
+            if (mode === 'weekly' && !wDateInput.value) {
+                showNotification('Lütfen yıllık başlangıç tarihini seçiniz!', 'error');
+                return;
+            }
+
+            const startValue = mode === 'daily' ? rDateInput.value : wDateInput.value;
+            lastGeneratedMode = mode;
+            lastGeneratedStartValue = startValue;
+
+            renderList(mode, startValue);
+
+            // Başarı bildirimi
+            const listType = mode === 'daily' ? 'Ramazan günlük' : 'Yıllık haftalık';
+            showNotification(`✓ ${listType} liste başarıyla oluşturuldu!`);
+        }
+
+        function showSingleCuz() {
+            const cuznInput = document.getElementById('cuzNumber');
+            const cuzn = parseInt(cuznInput.value, 10);
+
+            if (!lastGeneratedMode || !lastGeneratedStartValue) {
+                showNotification('Önce bir liste oluşturunuz!', 'error');
+                return;
+            }
+            if (Number.isNaN(cuzn) || cuzn < 1 || cuzn > 30) {
+                showNotification('Lütfen 1-30 arasında geçerli bir cüz numarası giriniz!', 'error');
+                return;
+            }
+
+            renderList(lastGeneratedMode, lastGeneratedStartValue, cuzn);
+            const listType = lastGeneratedMode === 'daily' ? 'Ramazan günlük' : 'Yıllık haftalık';
+            showNotification(`✓ ${cuzn}. cüz için ${listType} liste oluşturuldu!`);
+        }
+
+        // YENİ FONKSİYON: İkisini birlikte getir
+        function showBothCuz() {
+            const cuznInput = document.getElementById('cuzNumber');
+            const cuzn = parseInt(cuznInput.value, 10);
+
+            if (Number.isNaN(cuzn) || cuzn < 1 || cuzn > 30) {
+                showNotification('Lütfen 1-30 arasında geçerli bir cüz numarası giriniz!', 'error');
+                return;
+            }
+
+            const success = renderBothPrograms(cuzn);
+            if (success) {
+                showNotification(`✓ ${cuzn}. cüz için hem Ramazan hem Yıllık program tek sayfada oluşturuldu!`);
+            }
+        }
+
+        function showAll() {
+            if (!lastGeneratedMode || !lastGeneratedStartValue) {
+                showNotification('Önce bir liste oluşturunuz!', 'error');
+                return;
+            }
+
+            renderList(lastGeneratedMode, lastGeneratedStartValue);
+            showNotification('✓ Tüm liste geri getirildi!');
+        }
+    </script>
+</body>
+
+</html>
