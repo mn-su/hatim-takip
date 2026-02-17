@@ -314,6 +314,11 @@
                 <input type="text" id="subtitle" value="">
             </div>
 
+            <div class="form-field">
+                <label for="dateColumnWidth">Tarih Sütunu Genişliği (%) (opsiyonel)</label>
+                <input type="number" id="dateColumnWidth" min="35" max="80" placeholder="Varsayılan: 68">
+            </div>
+
             <div class="form-field" style="grid-column: 1 / -1;">
                 <label for="sectionNames">Bölüm Adları (opsiyonel): satır satır veya virgülle yazın</label>
                 <textarea id="sectionNames" placeholder="Boş bırakılırsa 1, 2, 3... kullanılır."></textarea>
@@ -321,7 +326,8 @@
 
             <div class="form-field" style="grid-column: 1 / -1;">
                 <label for="personNames">Kişi Adları (opsiyonel): satır satır veya virgülle yazın</label>
-                <textarea id="personNames" placeholder="Boş bırakılırsa 1. KİŞİ, 2. KİŞİ... görünür. Kısmi giriş yapabilirsiniz."></textarea>
+                <textarea id="personNames"
+                    placeholder="Boş bırakılırsa 1. KİŞİ, 2. KİŞİ... görünür. Kısmi giriş yapabilirsiniz."></textarea>
             </div>
         </div>
 
@@ -395,6 +401,8 @@
             const intervalDays = getPositiveInt('intervalDays', 'Periyot');
             const participantCount = getPositiveInt('participantCount', 'Toplam Kişi Sayısı');
             const columnsPerPage = getPositiveInt('columnsPerPage', 'Sayfa Başına Kolon');
+            const dateColumnWidthRaw = getFormValue('dateColumnWidth').trim();
+            const dateColumnWidth = dateColumnWidthRaw === '' ? 68 : parseInt(dateColumnWidthRaw, 10);
             const itemLabel = getFormValue('itemLabel').trim() || 'Cüz';
             const subtitle = getFormValue('subtitle').trim();
             const sectionNames = parseSectionNames(getFormValue('sectionNames'));
@@ -412,6 +420,9 @@
             if (columnsPerPage > participantCount) {
                 throw new Error('Sayfa Başına Kolon, Toplam Kişi Sayısı değerinden büyük olamaz.');
             }
+            if (dateColumnWidthRaw !== '' && (isNaN(dateColumnWidth) || dateColumnWidth < 35 || dateColumnWidth > 80)) {
+                throw new Error('Tarih Sütunu Genişliği Yüzde 35 ile 80 arasında olmalıdır.');
+            }
             if (sectionNames.length > 0 && sectionNames.length !== totalSections) {
                 throw new Error(`Bölüm Adları sayısı (${sectionNames.length}) ile Toplam Bölüm/Cüz sayısı (${totalSections}) eşit olmalıdır.`);
             }
@@ -427,6 +438,7 @@
                 intervalDays,
                 participantCount,
                 columnsPerPage,
+                dateColumnWidth,
                 itemLabel,
                 subtitle,
                 sectionNames,
@@ -482,7 +494,7 @@
                         ? `${config.programTitle} / ${config.subtitle}`
                         : config.programTitle;
                     html += `<div class="title-bar">${title}</div>`;
-                    html += `<table><tr><th style="width:68%">TARİH</th><th>${config.itemLabel.toUpperCase()}</th></tr>`;
+                    html += `<table><tr><th style="width:${config.dateColumnWidth}%">TARİH</th><th>${config.itemLabel.toUpperCase()}</th></tr>`;
 
                     for (let i = 0; i < config.totalPeriods; i++) {
                         const date = new Date(startDate);
