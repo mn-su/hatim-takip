@@ -1,4 +1,4 @@
-# 📖 Ramazan ve Yıllık Hatim Takip Sistemi (v2)
+# 📖 Ramazan ve Yıllık Hatim Dağıtım Sistemi (v2)
 
 Bu depo, Ramazan için günlük ve yıl boyunca haftalık Kur'an-ı Kerim okuma programları ile genel döngüsel okuma planları üretmek için geliştirilmiş, bağımlılıksız (vanilla) HTML tabanlı bir araçtır.
 
@@ -25,8 +25,8 @@ Bu depo, Ramazan için günlük ve yıl boyunca haftalık Kur'an-ı Kerim okuma 
 ## 🚀 Kullanım
 
 ### Online
-- Ana sayfa: [https://mn-su.github.io/hatim-takip](https://mn-su.github.io/hatim-takip)
-- Genel oluşturucu: [https://mn-su.github.io/hatim-takip/program.html](https://mn-su.github.io/hatim-takip/program.html)
+- Ana sayfa: [https://mn-su.github.io/hatim-dagitim](https://mn-su.github.io/hatim-dagitim)
+- Genel oluşturucu: [https://mn-su.github.io/hatim-dagitim/program.html](https://mn-su.github.io/hatim-dagitim/program.html)
 
 ### Yerel
 - `index.html` dosyasını açın (Ramazan + yıllık hatim)
@@ -98,4 +98,5 @@ Includes print-ready A4 layout, single/collective views, optional custom section
 ---
 
 Made with ❤️ — katkılarınız ve geliştirmeleriniz için teşekkürler.
+
 
